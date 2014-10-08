@@ -19,6 +19,7 @@
 
 import os
 import sys
+import time
 
 import argparse
 import ConfigParser
@@ -83,12 +84,11 @@ def main():
     except OSError:
         pass
 
-    lockname = os.path.join(args['data_dir'], cfg.LOCK_FILE)
-    cfg.LOCK = LockFile(lockname)
-    if cfg.LOCK.is_locked():
-        print '%s is locked! I am probably already running.' % lockname
-        print 'If you can find no selfspy process running, it is a stale lock and you can safely remove it.'
-        print 'Shutting down.'
+    strm = os.popen("ps -ef | grep -i 'selfspy' | grep -v 'grep'")
+    time.sleep(1)
+    res = strm.read()
+    if len(res.split('\n')) > 2:
+        print "It seems there's already a selfspy process; shutting down."
         sys.exit(1)
 
     if args['no_text']:
@@ -123,15 +123,12 @@ def main():
                            encrypter,
                            store_text=(not args['no_text']),
                            repeat_char=(not args['no_repeat']))
-    cfg.LOCK.acquire()
     try:
         astore.run()
     except SystemExit:
         astore.close()
     except KeyboardInterrupt:
         pass
-    # In OS X this is has to be released in sniff_cocoa
-    cfg.LOCK.release()
 
 if __name__ == '__main__':
     main()

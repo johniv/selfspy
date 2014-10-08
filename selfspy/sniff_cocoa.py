@@ -70,15 +70,8 @@ class Sniffer:
                 self.applicationWillTerminate_(notification)
                 return True
 
-            def applicationWillTerminate_(self, notification):
-                # need to release the lock here as when the
-                # application terminates it does not run the rest the
-                # original main, only the code that has crossed the
-                # pyobc bridge.
-                if cfg.LOCK.is_locked():
-                    cfg.LOCK.release()
-                print("Exiting")
-                return None
+            def applicationWillTerminate_(self, application):
+                pass
 
         return AppDelegate
 
